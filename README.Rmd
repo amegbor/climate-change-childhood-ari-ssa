@@ -1,6 +1,6 @@
 ---
 title: "Understanding the Link Between Climate Change and Childhood Acute Respiratory Infections: A Developmental Origin of Health and Disease (DOHaD) Perspective in Sub-Saharan Africa"
-author: "Prince M. Amegbor"
+author: "Prince M. Amegbor", "Ortis Yankey" & "Emmanuel Peprah"
 date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output:
   github_document:
@@ -44,8 +44,8 @@ project-root/
 │   ├── 01_linear_models.R
 │   ├── 02_non_linear_models.R
 │   ├── 03_effect_modification_evi.R
-│   ├── 04_effect_modification_models.R
-│   ├── 05_effect_modification_figures.R
+│   ├── 04_effect_modification_aap.R
+│   ├── 05_effect_modification_aap_figures.R
 │   └── 06_figures_linear_non_linear.R
 │
 ├── outputs/
@@ -295,4 +295,4 @@ The analytic dataset is not included in this repository. Access to the underlyin
 
 # Suggested Citation
 
-Amegbor, P. M. Understanding the Link Between Climate Change and Childhood Acute Respiratory Infections: A Developmental Origin of Health and Disease (DOHaD) Perspective in Sub-Saharan Africa.
+
