@@ -1,0 +1,298 @@
+---
+title: "Understanding the Link Between Climate Change and Childhood Acute Respiratory Infections: A Developmental Origin of Health and Disease (DOHaD) Perspective in Sub-Saharan Africa"
+author: "Prince M. Amegbor"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output:
+  github_document:
+    toc: true
+    toc_depth: 3
+    preserve_yaml: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Repository Overview
+
+This repository contains the analysis code for the manuscript:
+
+**Understanding the Link Between Climate Change and Childhood Acute Respiratory Infections: A Developmental Origin of Health and Disease (DOHaD) Perspective in Sub-Saharan Africa**
+
+The analysis evaluates associations between prenatal and postnatal climate anomalies, ambient air pollution, enhanced vegetation index (EVI), and childhood acute respiratory infections (ARI) in sub-Saharan Africa using Bayesian hierarchical models implemented with `R-INLA`.
+
+The repository is organized to support transparent, reproducible, and modular analysis. The data are not included in the public repository and should be stored locally in the expected project structure described below.
+
+# Repository Structure
+
+```text
+project-root/
+│
+├── README.Rmd
+├── README.md
+│
+├── data/
+│   └── DHS_ARI.rds
+│
+├── scripts/
+│   ├── 01_linear_models.R
+│   ├── 02_non_linear_models.R
+│   ├── 03_effect_modification_evi.R
+│   ├── 04_effect_modification_models.R
+│   ├── 05_effect_modification_figures.R
+│   └── 06_figures_linear_non_linear.R
+│
+├── outputs/
+│   ├── tables/
+│   ├── figures/
+│   ├── linear_models/
+│   ├── nonlinear_models/
+│   ├── effect_modification/
+│   └── effect_modification_evi/
+│
+└── manuscript/
+    └── figures/
+```
+
+# Data Requirements
+
+The main analytic dataset should be saved as:
+
+```text
+data/DHS_ARI.rds
+```
+
+This file is not included in the repository because it contains derived individual-level survey and environmental exposure data.
+
+The expected dataset must contain the following categories of variables:
+
+- Childhood ARI outcome: `ch_ari`
+- Prenatal climate anomalies: `IU_Tmp_z`, `IU_Tmx_z`, `IU_Preci_z`
+- Postnatal climate anomalies: `PU_Tmp_z`, `PU_Tmx_z`, `PU_Preci_z`
+- Prenatal air pollution and vegetation exposures: `IU_PM`, `IU_CO`, `IU_NO`, `IU_SO`, `IU_SU`, `IU_O3`, `IU_BC`, `IU_OC`, `IU_EVI`
+- Postnatal air pollution and vegetation exposures: `PU_PM`, `PU_CO`, `PU_NO`, `PU_SO`, `PU_SU`, `PU_O3`, `PU_BC`, `PU_OC`, `PU_EVI`
+- Child, maternal, household, and survey covariates: `b4`, `b8`, `ch_allvac_either`, `rc_edu`, `rc_empl`, `mat_age_cat`, `v190`, `Surv_year`
+- Spatial and survey structure variables: `wt`, `Reg_ID`, `admclust`
+
+# Required R Packages
+
+```{r packages, eval=FALSE}
+install.packages(c(
+  "dplyr",
+  "purrr",
+  "tibble",
+  "ggplot2",
+  "ggpubr",
+  "cowplot",
+  "readxl",
+  "openxlsx",
+  "here"
+))
+
+install.packages(
+  "INLA",
+  repos = c(
+    getOption("repos"),
+    INLA = "https://inla.r-inla-download.org/R/stable"
+  )
+)
+```
+
+# Analysis Workflow
+
+The scripts are designed to be run in sequence from the project root.
+
+## 1. Linear Bayesian Hierarchical Models
+
+The linear model script estimates incremental Bayesian hierarchical models for prenatal and postnatal climate anomalies and air pollution exposures.
+
+```{r run-linear-models, eval=FALSE}
+source(here::here("scripts", "01_linear_models.R"))
+```
+
+Primary outputs:
+
+```text
+outputs/tables/Prenatal_ARI.xlsx
+outputs/tables/Postnatal_ARI.xlsx
+outputs/linear_models/prenatal_linear_results.rds
+outputs/linear_models/postnatal_linear_results.rds
+outputs/linear_models/sessionInfo_linear_models.txt
+```
+
+These outputs are used to generate **Figure 1**, the fixed-effect coefficient plot comparing prenatal and postnatal climate anomaly associations with childhood ARI.
+
+## 2. Nonlinear Bayesian INLA/GAM Models
+
+The nonlinear model script fits smooth exposure-response models using `rw2` terms for climate anomalies.
+
+```{r run-nonlinear-models, eval=FALSE}
+source(here::here("scripts", "02_non_linear_models.R"))
+```
+
+Primary outputs:
+
+```text
+outputs/tables/Prenatal_GAM.xlsx
+outputs/tables/Postnatal_GAM.xlsx
+outputs/tables/Nonlinear_Model_Fit_Statistics.xlsx
+outputs/nonlinear_models/prenatal_gam_results.rds
+outputs/nonlinear_models/postnatal_gam_results.rds
+outputs/nonlinear_models/sessionInfo_non_linear_models.txt
+```
+
+These outputs are used to generate supplementary nonlinear exposure-response figures.
+
+## 3. EVI Effect Modification Models
+
+The EVI effect modification script evaluates whether vegetation cover modifies the nonlinear association between climate anomalies and ARI.
+
+```{r run-evi-effect-modification, eval=FALSE}
+source(here::here("scripts", "03_effect_modification_evi.R"))
+```
+
+Primary outputs:
+
+```text
+outputs/effect_modification_evi/evi_smooths_unadjusted.rds
+outputs/effect_modification_evi/evi_smooths_adjusted.rds
+outputs/effect_modification_evi/EVI_Effect_Modification_Fit_Stats.xlsx
+outputs/figures/Figure_2.tif
+outputs/figures/Figure_C1.tif
+outputs/figures/Figure_C2.tif
+outputs/figures/Figure_C3.tif
+outputs/effect_modification_evi/sessionInfo_evi_effect_modification.txt
+```
+
+The adjusted EVI effect modification models are used for **Figure 2**.
+
+## 4. Air Pollution Effect Modification Models
+
+The air pollution effect modification model script evaluates whether pollutant levels modify the nonlinear climate anomaly-ARI associations.
+
+```{r run-air-pollution-effect-modification-models, eval=FALSE}
+source(here::here("scripts", "04_effect_modification_models.R"))
+```
+
+Primary outputs:
+
+```text
+outputs/effect_modification/results_unadj.rds
+outputs/effect_modification/results_adj.rds
+outputs/effect_modification/Pollutant_Effect_Modification_Fit_Stats.xlsx
+outputs/effect_modification/sessionInfo_models.txt
+```
+
+## 5. Air Pollution Effect Modification Figures
+
+The figure script for air pollution effect modification creates the main and supplementary pollutant-modification figures.
+
+```{r run-air-pollution-effect-modification-figures, eval=FALSE}
+source(here::here("scripts", "05_effect_modification_figures.R"))
+```
+
+Primary outputs:
+
+```text
+outputs/figures/Figure_3.tif
+outputs/figures/Figure_4.tif
+outputs/figures/Figure_5.tif
+outputs/figures/Figure_D1.tif
+outputs/figures/Figure_D2.tif
+outputs/figures/Figure_D3.tif
+outputs/figures/Figure_D4.tif
+outputs/figures/Figure_D5.tif
+outputs/effect_modification/sessionInfo_figures.txt
+```
+
+## 6. Linear and Nonlinear Figures
+
+This script generates **Figure 1** and the nonlinear supplementary figures.
+
+```{r run-linear-nonlinear-figures, eval=FALSE}
+source(here::here("scripts", "06_figures_linear_non_linear.R"))
+```
+
+Primary outputs:
+
+```text
+outputs/figures/Figure_1.tiff
+outputs/figures/Figure_1.jpeg
+outputs/figures/Figure_B1.tiff
+outputs/figures/Figure_B2.tiff
+outputs/figures/Figure_B3.tiff
+outputs/figures/Figure_B4.tiff
+outputs/figures/Figure_B5.tiff
+outputs/figures/Figure_B6.tiff
+outputs/figures/sessionInfo_figures_linear_non_linear.txt
+```
+
+# Expected Manuscript Figures
+
+| Figure | Description | Script |
+|---|---|---|
+| Figure 1 | Fixed-effect estimates from linear prenatal and postnatal climate models | `06_figures_linear_non_linear.R` |
+| Figure 2 | EVI effect modification of climate anomaly-ARI associations | `03_effect_modification_evi.R` |
+| Figure 3 | Pollutant modification of mean temperature anomaly associations | `05_effect_modification_figures.R` |
+| Figure 4 | Pollutant modification of maximum temperature anomaly associations | `05_effect_modification_figures.R` |
+| Figure 5 | Pollutant modification of precipitation anomaly associations | `05_effect_modification_figures.R` |
+| Figure B1 | Prenatal nonlinear mean temperature models | `06_figures_linear_non_linear.R` |
+| Figure B2 | Postnatal nonlinear mean temperature models | `06_figures_linear_non_linear.R` |
+| Figure B3 | Prenatal nonlinear maximum temperature models | `06_figures_linear_non_linear.R` |
+| Figure B4 | Postnatal nonlinear maximum temperature models | `06_figures_linear_non_linear.R` |
+| Figure B5 | Prenatal nonlinear precipitation models | `06_figures_linear_non_linear.R` |
+| Figure B6 | Postnatal nonlinear precipitation models | `06_figures_linear_non_linear.R` |
+| Figure C1 | EVI modification of mean temperature anomaly models | `03_effect_modification_evi.R` |
+| Figure C2 | EVI modification of maximum temperature anomaly models | `03_effect_modification_evi.R` |
+| Figure C3 | EVI modification of precipitation anomaly models | `03_effect_modification_evi.R` |
+| Figure D1 | PM modification across climate anomaly models | `05_effect_modification_figures.R` |
+| Figure D2 | CO modification across climate anomaly models | `05_effect_modification_figures.R` |
+| Figure D3 | NO modification across climate anomaly models | `05_effect_modification_figures.R` |
+| Figure D4 | SO modification across climate anomaly models | `05_effect_modification_figures.R` |
+| Figure D5 | O3 modification across climate anomaly models | `05_effect_modification_figures.R` |
+
+# Run All Analyses
+
+The full workflow can be run as follows. The model scripts can be computationally intensive and may take substantial time depending on the size of the analytic dataset and available CPU resources.
+
+```{r run-all, eval=FALSE}
+source(here::here("scripts", "01_linear_models.R"))
+source(here::here("scripts", "02_non_linear_models.R"))
+source(here::here("scripts", "03_effect_modification_evi.R"))
+source(here::here("scripts", "04_effect_modification_models.R"))
+source(here::here("scripts", "05_effect_modification_figures.R"))
+source(here::here("scripts", "06_figures_linear_non_linear.R"))
+```
+
+# Model Summary
+
+The analyses use Bayesian hierarchical binomial models with a complementary log-log link.
+
+Key modeling features include:
+
+- Bayesian hierarchical modeling using `R-INLA`
+- `rw1` smoothing of survey/sample weights
+- regional IID random effects
+- cluster-level IID random effects
+- nonlinear `rw2` smooths for climate anomalies in GAM models
+- DIC and WAIC for model comparison
+- prenatal and postnatal exposure windows analyzed separately
+- effect modification by EVI and ambient air pollution levels
+
+# Reproducibility Notes
+
+The analysis is sensitive to package versions, especially `INLA`. Each script writes a `sessionInfo()` file to the relevant output folder. These files should be retained with the analysis outputs.
+
+# Data Availability
+
+The analytic dataset is not included in this repository. Access to the underlying survey and environmental data depends on the relevant data-use agreements and source-specific access requirements.
+
+# Suggested Citation
+
+Amegbor, P. M. Understanding the Link Between Climate Change and Childhood Acute Respiratory Infections: A Developmental Origin of Health and Disease (DOHaD) Perspective in Sub-Saharan Africa.
